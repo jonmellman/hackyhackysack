@@ -3,11 +3,16 @@ class Game {
 		this.emitter = EventEmitter({});
 		this.communication = new Communication(this.emitter);
     	this.scene = new Scene(this.emitter, this.communication);
-    	this.startLoading();
-	}
+    	
+    	this.communication.detectGame()
+    		.then((isInProgress) => {
+    			if (!isInProgress) {
+    				this.communication.sendNewGame();
+    			}
 
-	startLoading() {
-		this.scene.setup();
+    			const isHost = !isInProgress;
+    			return this.scene.setup(isHost);
+    		})
 	}
 }
 

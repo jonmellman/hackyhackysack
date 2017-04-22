@@ -12,7 +12,12 @@ class Scene {
 		this.container = document.querySelector('#container');
 	}
 
-	setup() {
+	setup(isHost) {
+
+		if (isHost) {
+			alert('hosting!');
+		}
+
 		return new Promise(resolve => {
 			this.setupThree();
 			this.setupVR();
@@ -22,9 +27,18 @@ class Scene {
 			});
 
 			const animate = () => {
-				const ballPosition = this.physics.update();
-				this.sphere.position.copy(ballPosition);
-				this.renderer.render(this.scene, this.camera);
+				let ballPosition;
+				if (isHost) {
+					ballPosition = this.physics.update();
+					this.communication.sendBallPosition(ballPosition);
+				} else {
+					ballPosition = this.communication.getBallPosition();
+				}
+
+				if (ballPosition) {
+					this.sphere.position.copy(ballPosition);
+					this.renderer.render(this.scene, this.camera);
+				}
 				requestAnimationFrame(animate);
 			}
 			animate();
@@ -57,7 +71,7 @@ class Scene {
 		const sphereGeometry = new THREE.SphereGeometry(this.config.ballRadius, 4, 4);
 		const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513, wireframe: true});
 		this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-		this.sphere.position.y = 4;
+		this.sphere.position.y = 2;
 
 		// Room.
 		const roomGeometry = new THREE.BoxGeometry(this.config.roomWidth, this.config.roomHeight, this.config.roomDepth, 10, 10, 10);

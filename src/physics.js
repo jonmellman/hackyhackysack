@@ -1,12 +1,12 @@
 class Physics {
-	constructor(config, emitters) {
+	constructor(config, emitter) {
 		this.config = config;
-		this.emitters = emitters;
+		this.emitter = emitter;
 	}
 
 	setupWorld(bodies) {
 		this.world = new CANNON.World();
-		this.world.gravity.set(1, -this.config.gravity, 0);
+		this.world.gravity.set(0, -this.config.gravity, 0);
 		this.world.broadphase = new CANNON.NaiveBroadphase();
 		this.world.solver.iterations = 20;
 		this.setupGround(bodies.plane);
