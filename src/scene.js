@@ -40,7 +40,6 @@ class Scene {
 
 		const self = this;
 		function render() {
-			self.camera.position.x;
 			requestAnimationFrame(render);
 			self.renderer.render(self.scene, self.camera);
 		}
@@ -60,19 +59,26 @@ class Scene {
 		this.box.position.z = -5;
 
 		// Room.
-		const roomGeometry = new THREE.BoxGeometry(10, 2, 10, 10, 2, 10);
+		const roomGeometry = new THREE.BoxGeometry(10, 10, 10, 10, 10, 10);
 		const roomMaterial = new THREE.MeshBasicMaterial({
 		  wireframe: true,
 		  opacity: 0.3,
 		  transparent: true,
 		  side: THREE.BackSide
 		});
-		const room = new THREE.Mesh(roomGeometry, roomMaterial);
+		this.room = new THREE.Mesh(roomGeometry, roomMaterial);
 
-		room.position.z = -5;
+		// Plane
+		const planeGeometry = new THREE.PlaneGeometry(10, 10);
+		const planeMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+		this.plane = new THREE.Mesh(planeGeometry, planeMaterial);
+		this.plane.rotation.x = Math.PI / 2;
+
+		this.room.position.z = -5;
 
 		this.scene.add(this.box);
-		this.scene.add(room);
+		this.scene.add(this.room);
+		this.scene.add(this.plane);
 	}
 
 	setupVR() {

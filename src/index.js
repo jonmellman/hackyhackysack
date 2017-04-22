@@ -12,5 +12,5 @@ class Game {
 }
 
 $(document).ready(() => {
-	const g = new Game();
+	window.game = new Game();
 })
