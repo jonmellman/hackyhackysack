@@ -16,6 +16,19 @@ class Scene {
 		return new Promise(resolve => {
 			this.setupThree();
 			this.setupVR();
+			this.physics.setupWorld({
+				ball: this.sphere,
+				plane: this.plane
+			});
+
+			const animate = () => {
+				const ballPosition = this.physics.update();
+				this.sphere.position.copy(ballPosition);
+				this.renderer.render(this.scene, this.camera);
+				requestAnimationFrame(animate);
+			}
+			animate();
+
 			resolve('loaded');
 		});
 	}
@@ -37,29 +50,17 @@ class Scene {
 		this.camera.position.z = 5;
 
 		this.createMeshes();
-
-		const self = this;
-		function render() {
-			requestAnimationFrame(render);
-			self.renderer.render(self.scene, self.camera);
-		}
-		render();
 	}
 
 	createMeshes() {
-		const WIDTH = 1;
-		const HEIGHT = 1;
-		const DEPTH = 1;
-
-		// Box.
-		const boxGeometry = new THREE.BoxGeometry(WIDTH, HEIGHT, DEPTH);
-		const boxMaterial = new THREE.MeshNormalMaterial();
-
-		this.box = new THREE.Mesh(boxGeometry, boxMaterial);
-		this.box.position.z = -5;
+		// Sphere
+		const sphereGeometry = new THREE.SphereGeometry(this.config.ballRadius, 4, 4);
+		const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513, wireframe: true});
+		this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+		this.sphere.position.y = 4;
 
 		// Room.
-		const roomGeometry = new THREE.BoxGeometry(10, 10, 10, 10, 10, 10);
+		const roomGeometry = new THREE.BoxGeometry(this.config.roomWidth, this.config.roomHeight, this.config.roomDepth, 10, 10, 10);
 		const roomMaterial = new THREE.MeshBasicMaterial({
 		  wireframe: true,
 		  opacity: 0.3,
@@ -67,16 +68,16 @@ class Scene {
 		  side: THREE.BackSide
 		});
 		this.room = new THREE.Mesh(roomGeometry, roomMaterial);
-
-		// Plane
-		const planeGeometry = new THREE.PlaneGeometry(10, 10);
-		const planeMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-		this.plane = new THREE.Mesh(planeGeometry, planeMaterial);
-		this.plane.rotation.x = Math.PI / 2;
-
 		this.room.position.z = -5;
 
-		this.scene.add(this.box);
+		// Plane
+		const planeGeometry = new THREE.PlaneGeometry(this.config.roomWidth, this.config.roomDepth);
+		const planeMaterial = new THREE.MeshBasicMaterial( {color: 0xfffff0, side: THREE.FrontSide} );
+		this.plane = new THREE.Mesh(planeGeometry, planeMaterial);
+		this.plane.rotation.x = -Math.PI / 2;
+
+
+		this.scene.add(this.sphere);
 		this.scene.add(this.room);
 		this.scene.add(this.plane);
 	}
