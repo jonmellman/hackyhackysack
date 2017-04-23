@@ -10,3 +10,9 @@ const INITIAL_CONFIG = {
 	roomDepth: 10,
 	timeStep: 1/60
 };
+
+
+const EVENT = {
+  FLOOR_COLLISION: 'FLOOR_COLLISION',
+
+};

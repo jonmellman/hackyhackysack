@@ -23,6 +23,13 @@ class Physics {
 		});
 		this.ground.position.copy(plane.position);
 		this.ground.quaternion.copy(plane.quaternion);
+
+		// //LG: collisions
+		// //hackysack.collisionResponse = 0;
+		// this.ground.addEventListener("collide", function (e) {
+		// 	console.log("ground sack collided");
+		// });
+
 		this.world.add(this.ground);
 	}
 
@@ -36,8 +43,20 @@ class Physics {
 		this.hackysack.position.copy(hackysack.position);
 		this.hackysack.quaternion.copy(hackysack.quaternion);
 		this.hackysack.linearDamping = 0.1;
+
+		//LG: collisions
+		//hackysack.collisionResponse = 0;
+		this.hackysack.addEventListener("collide", function (e) {
+			console.log("hacky sack collided");
+			this.emitter.emit(EVENT.FLOOR_COLLISION, e.body);
+		}.bind(this));
+
 		this.world.add(this.hackysack);
 	}
+
+	
+
+
 
 	update() {
 		this.world.step(this.config.timeStep)
