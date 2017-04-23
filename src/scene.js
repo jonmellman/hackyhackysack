@@ -88,22 +88,23 @@ class Scene {
 		this.container.appendChild(this.renderer.domElement);
 
 		this.scene = new ThreeScene();
-		this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.cameraRig = new THREE.Group();
-		this.cameraRig.add(this.camera);
+		
 		this.scene.add(this.cameraRig);
 
-		this.camera.position.x = Math.max(Math.random() * 5, 2);
-		this.camera.position.y = 1.6;
-		this.camera.position.z = Math.max(Math.random() * 5, 2);
+		//create spawn location
+		var spawnLocation = new THREE.Vector3(
+			Math.max(Math.random() * 5, 2), 
+			 1.6,
+			Math.max(Math.random() * 5, 2)
+		);
+
 
 		this.createMeshes();
-		this.camera.lookAt(this.hackysack.quaternion);
+		
+		var player = new Player(true, this.communication, spawnLocation, this.hackysack);
+		this.players[this.communication.clientId] = player;
 
-		this.players[this.communication.clientId] = {
-			position: this.camera.position,
-			quaternion: this.camera.quaternion
-		};
+		this.scene.add(player.getObject());
 	}
 
 	createMeshes() {
@@ -134,42 +135,9 @@ class Scene {
 		this.ground.rotation.x = -Math.PI / 2;
 
 
-		this.scene.add(this.buildControllerBasic());
 		this.scene.add(this.hackysack);
 		this.scene.add(this.room);
 		this.scene.add(this.ground);
-	}
-
-	addControllers(scene, camera) {
-		this.controls = new THREE.VRControls(camera);
-		this.controls.standing = true;
-
-		this.controller1 = new THREE.ViveController(0);
-		this.controller1.standingMatrix = this.controls.getStandingMatrix();
-		this.cameraRig.add(this.controller1);
-		this.controller2 = new THREE.ViveController(1);
-		this.controller2.standingMatrix = this.controls.getStandingMatrix();
-		this.cameraRig.add(this.controller2);
-
-		var controllerObject = this.buildControllerBasic();
-		if (controllerObject != null) {
-			this.controller1.add(controllerObject.clone());
-			this.controller2.add(controllerObject.clone());
-		}
-	}
-
-
-	//Loads a basic cube for the controller mesh
-	buildControllerBasic() {
-		var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-		var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
-		object.position.x = 0;
-		object.position.y = 0;
-		object.position.z = 0;
-		object.scale.x = 1;
-		object.scale.y = 1;
-		object.scale.z = 1;
-		return object;
 	}
 
 	onRecievedPlayerMove(playerId, position) {
