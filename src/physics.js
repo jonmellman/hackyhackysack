@@ -24,7 +24,19 @@ class Physics {
 		this.ground.position.copy(plane.position);
 		this.ground.quaternion.copy(plane.quaternion);
 
+		this.ground.addEventListener("collide", (e) => {
+			console.log("hacky sack collided");
+			this.emitter.emit(EVENT.FLOOR_COLLISION, e.body);
+		});
+
 		this.world.add(this.ground);
+	}
+
+
+	//called from the hand controller setup
+	addHand(handBody){
+		this.world.add(handBody);
+		this.addContactMaterial(handBody.material, this.ground.material, .7, .3);
 	}
 
 	setupHackysack(hackysack) {
@@ -37,11 +49,6 @@ class Physics {
 		this.hackysack.position.copy(hackysack.position);
 		this.hackysack.quaternion.copy(hackysack.quaternion);
 		this.hackysack.linearDamping = 0.1;
-
-		this.hackysack.addEventListener("collide", (e) => {
-			console.log("hacky sack collided");
-			this.emitter.emit(EVENT.FLOOR_COLLISION, e.body);
-		});
 
 		this.world.add(this.hackysack);
 	}

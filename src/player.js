@@ -8,16 +8,23 @@ function getRandomColor() {
 }
 
 class Player extends THREE.Object3D {
-    constructor(isLocalPlayer, communication, spawnLocation, lookatObject, color) {
+    constructor(isLocalPlayer, communication, spawnLocation, lookatObject, color, physics) {
         super();
         this.isLocalPlayer = isLocalPlayer;
         this.communication = communication;
+        //debugger;
 
+        this.config = {
+            HAND_SIZE: 0.1, 
+            HEAD_SIZE: 0.3
+        }
         this.head = "";
         this.leftHand = "";
         this.rightHand = "";
         this.camera = null;
         this.color = color || getRandomColor();
+
+        this.physics = physics;
 
         this.headMesh = null;
         this.createPrefab(spawnLocation, lookatObject);
@@ -25,8 +32,8 @@ class Player extends THREE.Object3D {
 
 
     createHead() {
-        const headGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-        this.headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: 0xFF0000 }));
+        const headGeometry = new THREE.BoxGeometry(this.config.HEAD_SIZE, this.config.HEAD_SIZE, this.config.HEAD_SIZE);
+        this.headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: this.color }));
         this.head.add(this.headMesh);
     }
 
@@ -35,18 +42,14 @@ class Player extends THREE.Object3D {
     }
 
     hideHead() {
-        console.log("hideing head 1");
         this.headMesh.visible = false;
-        console.log("hideing head 2");
     }
 
 
     createPrefab(spawnLocation, lookatObject) {
         this.head = new THREE.Group();
-        //this.head.position.set(0,0,0);
         this.add(this.head);
 
-        
         this.createHead();
        
         if (this.isLocalPlayer) {
@@ -54,10 +57,6 @@ class Player extends THREE.Object3D {
             this.head.add(this.camera);
         }
         
-
-        const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-        const headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: this.color }));
-        this.head.add(headMesh);
         this.addControllers(this.head);
         this.showHead();
         
@@ -69,7 +68,15 @@ class Player extends THREE.Object3D {
             this.leftHand.update();
             this.rightHand.update();
             this.controls.update();
+            this.updatePhysicsModel(this.leftHandModel, this.leftHand);
+            this.updatePhysicsModel(this.rightHandModel, this.leftHand);
         }
+    }
+
+    updatePhysicsModel(modelObject, object){
+        modelObject.position.set(object.x, object.y, object.z);
+        //modelObject.position.copy(object.position);
+		//modelObject.quaternion.copy(object.quaternion);
     }
 
     addControllers(head) {
@@ -88,15 +95,35 @@ class Player extends THREE.Object3D {
             this.rightHand = new THREE.Group();
         }
         const controllerMesh = this.buildControllerMesh();
+        
         this.leftHand.add(controllerMesh.clone());
         this.rightHand.add(controllerMesh.clone());
+
+        this.leftHandModel = this.addControllerPhysicsBody(this.leftHand);
+        this.rightHandModel = this.addControllerPhysicsBody(this.rightHand);
 
         this.add(this.leftHand);
         this.add(this.rightHand);
     }
 
+    addControllerPhysicsBody(controller){
+        var body = new CANNON.Body({
+			mass: 1,
+            type: CANNON.Body.Kinematic,
+			shape: new CANNON.Box(new CANNON.Vec3( this.config.HAND_SIZE, this.config.HAND_SIZE, this.config.HAND_SIZE)),
+			material: new CANNON.Material()
+		});
+		
+		//body.position.copy(controller.position);
+		//body.quaternion.copy(controller.quaternion);
+       
+        //this.physics.addHand(body);
+
+        return body;
+    }
+
     buildControllerMesh() {
-        const controllerGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        const controllerGeometry = new THREE.BoxGeometry(this.config.HAND_SIZE, this.config.HAND_SIZE, this.config.HAND_SIZE);
         const controllerMaterial = new THREE.Mesh(controllerGeometry, new THREE.MeshBasicMaterial({ color: 0xe28d16 }));
         return controllerMaterial;
     }

@@ -130,7 +130,8 @@ class Scene {
 						this.communication,
 						playerEntered.position,
 						this.hackysack,
-						playerEntered.color
+						playerEntered.color, 
+						this.physics
 					);
 					this.scene.add(this.players[playerEntered.clientId]);
 				}
@@ -193,9 +194,10 @@ class Scene {
 			2.5 - Math.max(Math.random() * 5, 2),
 			0,
 			2.5 - Math.max(Math.random() * 5, 2)
-
 		);
-		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
+	
+		console.log(this.physics);
+		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack, this.physics);
 		this.scene.add(this.localPlayer);
 		this.players[this.communication.clientId] = this.localPlayer;
 
