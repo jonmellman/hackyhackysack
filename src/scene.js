@@ -92,6 +92,11 @@ class Scene {
 		);
 
 		this.createMeshes();
+		// this.localPlayer = new OverheadCamera(this.communication, this.hackysack);
+		// this.camera = this.localPlayer;
+
+		// this.scene.add(this.localPlayer);
+
 		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
 		this.players[this.communication.clientId] = this.localPlayer;
 		this.camera = this.localPlayer.camera;
@@ -148,6 +153,14 @@ class Scene {
 		this.effect = new THREE.VREffect(this.renderer);
 		WEBVR.getVRDisplay((display) => {
 			document.body.appendChild(WEBVR.getButton(display, this.renderer.domElement));
+			window.addEventListener( 'vrdisplaypresentchange', () => {
+				if (display.isPresenting) {
+
+				} else {
+					console.log('??')
+				}
+			});
 		});
+
 	}
 }
