@@ -30,7 +30,7 @@ class Scene {
 			});
 
 
-			window.addEventListener('resize', this.onWindowResize, false);
+			window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
 			const animate = () => {
 				let hackysackPosition;
@@ -70,8 +70,8 @@ class Scene {
 
 
 	onWindowResize() {
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix();
+		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.updateProjectionMatrix();
 		this.effect.setSize(window.innerWidth, window.innerHeight);
 	}
 
