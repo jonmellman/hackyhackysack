@@ -4,14 +4,13 @@ class Game {
 		this.communication = new Communication(this.emitter);
     	this.scene = new Scene(this.emitter, this.communication);
     	
-    	this.communication.detectGame()
+    	this.communication.connect()
     		.then((isInProgress) => {
     			if (!isInProgress) {
     				this.communication.sendNewGame();
     			}
 
-    			const isHost = !isInProgress;
-    			return this.scene.setup(isHost);
+    			return this.scene.setup();
     		})
 	}
 }

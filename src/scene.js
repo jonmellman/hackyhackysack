@@ -7,17 +7,18 @@ class Scene {
 	constructor(emitter, communication) {
 		this.emitter = emitter;
 		this.communication = communication;
-		this.config = Object.assign({}, INITIAL_CONFIG);
+		this.config = INITIAL_CONFIG;
 		this.physics = new Physics(this.config, this.emitter);
 		this.container = document.querySelector('#container');
+		this.communication.setCallbacks({
+			recievedPlayerMove: this.onRecievedPlayerMove.bind(this),
+			recievedBallMove: this.onRecievedBallMove.bind(this),
+			recievedHostDiconnect: this.onRecievedHostDisconnect.bind(this)
+		});
+		this.players = {};
 	}
 
-	setup(isHost) {
-
-		if (isHost) {
-			alert('hosting!');
-		}
-
+	setup() {
 		return new Promise(resolve => {
 			this.setupThree();
 			this.setupVR();
@@ -28,12 +29,14 @@ class Scene {
 
 			const animate = () => {
 				let ballPosition;
-				if (isHost) {
+				if (this.communication.isHost) {
 					ballPosition = this.physics.update();
 					this.communication.sendBallPosition(ballPosition);
 				} else {
 					ballPosition = this.communication.getBallPosition();
 				}
+
+				this.communication.sendPlayerPosition(this.camera.position);
 
 				if (ballPosition) {
 					this.sphere.position.copy(ballPosition);
@@ -59,17 +62,26 @@ class Scene {
 		this.scene = new ThreeScene();
 		this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-		this.camera.position.x = 0;
+		this.camera.position.x = Math.max(Math.random() * 5, 2);
 		this.camera.position.y = 1.6;
-		this.camera.position.z = 5;
+		this.camera.position.z = Math.max(Math.random() * 5, 2);
 
 		this.createMeshes();
+		this.camera.lookAt(this.sphere.quaternion);
+
+		this.players[this.communication.clientId] = {
+			position: this.camera.position,
+			quaternion: this.camera.quaternion
+		};
 	}
 
 	createMeshes() {
 		// Sphere
 		const sphereGeometry = new THREE.SphereGeometry(this.config.ballRadius, 4, 4);
-		const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513, wireframe: true});
+		const sphereMaterial = new THREE.MeshBasicMaterial({
+			color: this.communication.isHost ? 0xcc0000 : 0x8B4513,
+			wireframe: true
+		});
 		this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 		this.sphere.position.y = 2;
 
@@ -90,10 +102,21 @@ class Scene {
 		this.plane = new THREE.Mesh(planeGeometry, planeMaterial);
 		this.plane.rotation.x = -Math.PI / 2;
 
-
 		this.scene.add(this.sphere);
 		this.scene.add(this.room);
 		this.scene.add(this.plane);
+	}
+
+	onRecievedPlayerMove(playerId, position) {
+
+	}
+
+	onRecievedBallMove(position) {
+
+	}
+
+	onRecievedHostDisconnect() {
+		// TODO
 	}
 
 	setupVR() {
