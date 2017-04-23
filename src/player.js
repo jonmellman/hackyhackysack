@@ -12,30 +12,56 @@ class Player extends THREE.Object3D {
         super();
         this.isLocalPlayer = isLocalPlayer;
         this.communication = communication;
-        
+
         this.head = "";
         this.leftHand = "";
         this.rightHand = "";
         this.camera = null;
         this.color = color || getRandomColor();
 
+        this.headMesh = null;
         this.createPrefab(spawnLocation, lookatObject);
     }
+
+
+    createHead() {
+        const headGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+        this.headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: 0xFF0000 }));
+        this.head.add(this.headMesh);
+    }
+
+    showHead(){
+        this.headMesh.visible = true;
+    }
+
+    hideHead() {
+        console.log("hideing head 1");
+        this.headMesh.visible = false;
+        console.log("hideing head 2");
+    }
+
+
     createPrefab(spawnLocation, lookatObject) {
         this.head = new THREE.Group();
+        //this.head.position.set(0,0,0);
         this.add(this.head);
-        this.position.set(spawnLocation.x, spawnLocation.y, spawnLocation.z);
 
+        
+        this.createHead();
+       
         if (this.isLocalPlayer) {
             this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            this.camera.lookAt(lookatObject.quaternion);
             this.head.add(this.camera);
         }
+        
 
         const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: this.color }));
         this.head.add(headMesh);
         this.addControllers(this.head);
+        this.showHead();
+        
+        this.position.set(spawnLocation.x, spawnLocation.y, spawnLocation.z);
     }
 
     update() {
@@ -71,13 +97,7 @@ class Player extends THREE.Object3D {
 
     buildControllerMesh() {
         const controllerGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-        const controllerMaterial = new THREE.Mesh(controllerGeometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
-        controllerMaterial.position.x = Math.random();
-        controllerMaterial.position.y = 5;
-        controllerMaterial.position.z = Math.random();
-        controllerMaterial.scale.x = 1;
-        controllerMaterial.scale.y = 1;
-        controllerMaterial.scale.z = 1;
+        const controllerMaterial = new THREE.Mesh(controllerGeometry, new THREE.MeshBasicMaterial({ color: 0xe28d16 }));
         return controllerMaterial;
     }
 }

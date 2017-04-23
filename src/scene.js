@@ -166,10 +166,12 @@ class Scene {
 		this.scene = new ThreeScene();
 		this.createMeshes();
 
+
 		const spawnLocation = new THREE.Vector3(
 			2.5 - Math.max(Math.random() * 5, 2),
 			0,
 			2.5 - Math.max(Math.random() * 5, 2)
+
 		);
 		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
 		this.scene.add(this.localPlayer);
@@ -293,8 +295,17 @@ class Scene {
 	toggleVR(enable) {
 		if (enable) {
 			this.camera = this.localPlayer.camera;
+			this.localPlayer.hideHead();
+			//debugger;
+
+			//console.log(this.localPlayer.camera.position);
+			this.onWindowResize();
 		} else {
 			this.camera = this.overheadCamera;
+			this.localPlayer.showHead();
 		}
+
+		//camera is changing
+		
 	}
 }
