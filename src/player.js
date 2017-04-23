@@ -9,16 +9,15 @@ class Player extends THREE.Object3D {
         this.rightHand = "";
         this.camera = null;
 
-        spawnLocation = new THREE.Vector3(2, 2, 2);
         this.createPrefab(spawnLocation, lookatObject);
     }
     createPrefab(spawnLocation, lookatObject) {
         this.head = new THREE.Group();
         this.add(this.head);
+        this.position.copy(spawnLocation);
 
         if (this.isLocalPlayer) {
             this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            this.camera.position.set(spawnLocation);
             this.camera.lookAt(lookatObject.quaternion);
             this.head.add(this.camera);
 

@@ -83,9 +83,6 @@ class Scene {
 
 			const animate = () => {
 				let hackysackPosition;
-
-				//LG For local testing only
-				// hackysackPosition = this.physics.update();
 				if (this.communication.isHost) {
 					hackysackPosition = this.physics.update();
 					this.communication.sendHackysackPosition(hackysackPosition);
@@ -93,28 +90,28 @@ class Scene {
 					hackysackPosition = this.communication.getHackysackPosition();
 				}
 
-				// const result = this.communication.resolvePlayerUpdates(this.players);
-				// if (result.playersEntered.length) {
-				// 	console.debug('enter', result.playersEntered)
-				// }
-				// if (result.playersExited.length) {
-				// 	console.debug('exit', result.playersExited);
-				// }
+				const result = this.communication.resolvePlayerUpdates(this.players);
+				if (result.playersEntered.length) {
+					console.debug('enter', result.playersEntered)
+				}
+				if (result.playersExited.length) {
+					console.debug('exit', result.playersExited);
+				}
 
-				// for (let playerExited of result.playersEntered) {
-				// 	if (playerExited !== this.communication.clientId) {
-				// 		delete this.players[playerExited]
-				// 	}
-				// }
-				// for (let playerEntered of result.playersEntered) {
-				// 	this.players[playerEntered.clientId] = new Player(
-				// 		false,
-				// 		this.communication,
-				// 		playerEntered.position,
-				// 		this.hackysack
-				// 	);
-				// 	this.scene.add(this.players[playerEntered.clientId]);
-				// }
+				for (let playerExited of result.playersEntered) {
+					if (playerExited !== this.communication.clientId) {
+						delete this.players[playerExited]
+					}
+				}
+				for (let playerEntered of result.playersEntered) {
+					this.players[playerEntered.clientId] = new Player(
+						false,
+						this.communication,
+						playerEntered.position,
+						this.hackysack
+					);
+					this.scene.add(this.players[playerEntered.clientId]);
+				}
 				
 				for (let clientId in this.players) {
 					this.players[clientId].update();
@@ -134,7 +131,7 @@ class Scene {
 					this.scoreBoard.lookAt(new THREE.Vector3(this.camera.position.x, this.scoreBoard.position.y, this.camera.position.z));
 				}
 
-				// this.sendPlayerData(serialize(this.players))
+				this.sendPlayerData(serialize(this.players))
 				requestAnimationFrame(animate);
 			}
 			animate();
@@ -170,9 +167,9 @@ class Scene {
 		this.createMeshes();
 
 		const spawnLocation = new THREE.Vector3(
-			Math.max(Math.random() * 5, 2),
-			 1.6,
-			Math.max(Math.random() * 5, 2)
+			2.5 - Math.max(Math.random() * 5, 2),
+			0,
+			2.5 - Math.max(Math.random() * 5, 2)
 		);
 		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
 		this.scene.add(this.localPlayer);
