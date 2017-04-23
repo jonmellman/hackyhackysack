@@ -85,13 +85,13 @@ class Scene {
 				let hackysackPosition;
 
 				//LG For local testing only
-				hackysackPosition = this.physics.update();
-				// if (this.communication.isHost) {
-				// 	hackysackPosition = this.physics.update();
-				// 	this.communication.sendHackysackPosition(hackysackPosition);
-				// } else {
-				// 	hackysackPosition = this.communication.getHackysackPosition();
-				// }
+				// hackysackPosition = this.physics.update();
+				if (this.communication.isHost) {
+					hackysackPosition = this.physics.update();
+					this.communication.sendHackysackPosition(hackysackPosition);
+				} else {
+					hackysackPosition = this.communication.getHackysackPosition();
+				}
 
 				// const result = this.communication.resolvePlayerUpdates(this.players);
 				// if (result.playersEntered.length) {
@@ -182,7 +182,6 @@ class Scene {
 		this.scene.add(this.overheadCamera);
 		this.camera = this.overheadCamera;
 
-		this.toggleVR(false);
 		this.createMeshes();
 
 		var player = new Player(true, this.communication, spawnLocation, this.hackysack);
@@ -190,6 +189,7 @@ class Scene {
 		this.camera = player.camera;
 
 		this.scene.add(player);
+		this.toggleVR(false);
 	}
 
 	createMeshes() {
