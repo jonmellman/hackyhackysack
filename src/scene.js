@@ -96,7 +96,7 @@ class Scene {
 		this.room = new THREE.Mesh(roomGeometry, roomMaterial);
 		this.room.position.z = -5;
 
-		// Plane
+		// ground
 		const groundGeometry = new THREE.PlaneGeometry(this.config.roomWidth, this.config.roomDepth);
 		const groundMaterial = new THREE.MeshBasicMaterial( {color: 0xfffff0, side: THREE.FrontSide} );
 		this.ground = new THREE.Mesh(groundGeometry, groundMaterial);

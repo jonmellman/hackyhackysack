@@ -4,10 +4,10 @@ class Game {
 		this.communication = new Communication(this.emitter);
     	this.scene = new Scene(this.emitter, this.communication);
   	
-  		console.time('time')  	
+  		console.time('connect')  	
     	this.communication.connect()
     		.then((isInProgress) => {
-    			console.timeEnd('time')
+    			console.timeEnd('connect')
     			if (!isInProgress) {
     				this.communication.sendNewGame();
     			}
