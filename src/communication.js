@@ -11,7 +11,7 @@ class Communication {
 
 	connect() {
 		return new Promise((resolve, reject) => {
-			this.ds = deepstream('localhost:6020').login();
+			this.ds = deepstream('128.208.184.85:6020').login();
 			this.ds.on('connectionStateChanged', e => {
 				if (e === deepstream.CONSTANTS.CONNECTION_STATE.OPEN) {
 					resolve();

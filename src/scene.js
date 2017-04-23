@@ -185,7 +185,7 @@ class Scene {
 	}
 
 	setupVR() {
-		this.addControllers();
+		this.addControllers(this.scene, this.camera);
 		this.effect = new THREE.VREffect(this.renderer);
 		WEBVR.getVRDisplay((display) => {
 			document.body.appendChild(WEBVR.getButton(display, this.renderer.domElement));
