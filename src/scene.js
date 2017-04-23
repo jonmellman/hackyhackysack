@@ -3,6 +3,54 @@ const BasicShadowMap = THREE.BasicShadowMap;
 const ThreeScene = THREE.Scene;
 const PerspectiveCamera = THREE.PerspectiveCamera;
 
+// TODO: move to util
+function serialize(playersUpdate) {
+	const serialized = {};
+	for (let clientId in playersUpdate) {
+		serialized[clientId] = {
+			position: playersUpdate[clientId].position
+		};
+	}
+	return serialized;
+}
+
+// Returns a function, that, when invoked, will only be triggered at most once
+// during a given window of time. Normally, the throttled function will run
+// as much as it can, without ever going more than once per `wait` duration;
+// but if you'd like to disable the execution on the leading edge, pass
+// `{leading: false}`. To disable execution on the trailing edge, ditto.
+function throttle(thisArg, func, wait, options) {
+  var context, args, result;
+  var timeout = null;
+  var previous = 0;
+  if (!options) options = {};
+  var later = function() {
+    previous = options.leading === false ? 0 : Date.now();
+    timeout = null;
+    result = func.apply(context, args);
+    if (!timeout) context = args = null;
+  };
+  return function() {
+    var now = Date.now();
+    if (!previous && options.leading === false) previous = now;
+    var remaining = wait - (now - previous);
+    context = thisArg;
+    args = arguments;
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      previous = now;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    } else if (!timeout && options.trailing !== false) {
+      timeout = setTimeout(later, remaining);
+    }
+    return result;
+  };
+};
+
 class Scene {
 	constructor(emitter, communication) {
 		this.emitter = emitter;
@@ -16,6 +64,8 @@ class Scene {
 			recievedHostDiconnect: this.onRecievedHostDisconnect.bind(this)
 		});
 		this.players = {};
+
+		this.sendPlayerData = throttle(this.communication, this.communication.sendPlayerData, 200);
 	}
 
 	setup() {
@@ -40,9 +90,33 @@ class Scene {
 					hackysackPosition = this.communication.getHackysackPosition();
 				}
 
+				// const result = this.communication.resolvePlayerUpdates(this.players);
+				// if (result.playersEntered.length) {
+				// 	console.debug('enter', result.playersEntered)
+				// }
+				// if (result.playersExited.length) {
+				// 	console.debug('exit', result.playersExited);
+				// }
+
+				// for (let playerExited of result.playersEntered) {
+				// 	if (playerExited !== this.communication.clientId) {
+				// 		delete this.players[playerExited]
+				// 	}
+				// }
+				// for (let playerEntered of result.playersEntered) {
+				// 	this.players[playerEntered.clientId] = new Player(
+				// 		false,
+				// 		this.communication,
+				// 		playerEntered.position,
+				// 		this.hackysack
+				// 	);
+				// 	this.scene.add(this.players[playerEntered.clientId]);
+				// }
+				
 				for (let clientId in this.players) {
 					this.players[clientId].update();
 				}
+
 
 				if (hackysackPosition) {
 					this.hackysack.position.copy(hackysackPosition);
@@ -52,6 +126,8 @@ class Scene {
 				if (this.config.isWebVRAvailable) {
 					this.animateVR();
 				}
+
+				// this.sendPlayerData(serialize(this.players))
 				requestAnimationFrame(animate);
 			}
 			animate();
@@ -85,8 +161,21 @@ class Scene {
 
 		this.scene = new ThreeScene();
 		this.createMeshes();
+
+		const spawnLocation = new THREE.Vector3(
+			Math.max(Math.random() * 5, 2),
+			 1.6,
+			Math.max(Math.random() * 5, 2)
+		);
+		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
+		this.scene.add(this.localPlayer);
+		this.players[this.communication.clientId] = this.localPlayer;
+
+		this.overheadCamera = new OverheadCamera(this.communication, this.hackysack);
+		this.scene.add(this.overheadCamera);
+		this.camera = this.overheadCamera;
+
 		this.toggleVR(false);
-		this.scene.add(this.camera);
 	}
 
 	createMeshes() {
@@ -115,7 +204,6 @@ class Scene {
 		const groundMaterial = new THREE.MeshBasicMaterial({ color: 0xfffff0, side: THREE.FrontSide });
 		this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
 		this.ground.rotation.x = -Math.PI / 2;
-
 
 		this.scene.add(this.hackysack);
 		this.scene.add(this.room);
@@ -146,20 +234,9 @@ class Scene {
 
 	toggleVR(enable) {
 		if (enable) {
-			const spawnLocation = new THREE.Vector3(
-				Math.max(Math.random() * 5, 2), 
-				 1.6,
-				Math.max(Math.random() * 5, 2)
-			);
-			this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
-			this.players[this.communication.clientId] = this.localPlayer;
 			this.camera = this.localPlayer.camera;
 		} else {
-			delete this.localPlayer;
-			delete this.players[this.communication.clientId];
-			this.camera = new OverheadCamera(this.communication, this.hackysack);
+			this.camera = this.overheadCamera;
 		}
-
-		this.scene.add(this.camera);
 	}
 }

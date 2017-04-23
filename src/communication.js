@@ -1,7 +1,19 @@
+// TODO: move to util
+function deserialize(playerData) {
+	return {
+		position: new THREE.Vector3(
+			playerData.position.x,
+			playerData.position.y,
+			playerData.position.z
+		)
+	};
+}
+
 class Communication {
 	constructor(emitter) {
 		this.callbacks = {};
 		this.hackysackPosition;
+		this.latestPlayersUpdate = {};
 
 		// for restarting during dev
 		window.disconnectHost = () => {
@@ -35,11 +47,15 @@ class Communication {
 			});
 		})
 		.then(() => {
-			this.playersRecord = this.ds.record.getRecord(`player/${this.clientId}`);
+			this.playersRecord = this.ds.record.getRecord(`players`);
 			this.gameRecord = this.ds.record.getRecord('game');
 			this.hackysackRecord = this.ds.record.getRecord('hackysack');
 			this.hackysackRecord.subscribe('position', value => {
 				this.hackysackPosition = value;
+			});
+
+			this.playersRecord.subscribe('playerData', (playersUpdate) => {
+				this.latestPlayersUpdate = playersUpdate;
 			});
 
 			this.gameRecord.subscribe('forceRefresh', (doIt) => {
@@ -54,8 +70,8 @@ class Communication {
 		});
 	}
 
-	setCallbacks() {
-		this.callbacks = {};
+	setCallbacks(callbacks) {
+		this.callbacks = callbacks;
 	}
 	
 	detectGame() {
@@ -79,9 +95,39 @@ class Communication {
 		return this.hackysackPosition;
 	}
 
-	sendPlayerPosition(position) {
-		this.playersRecord.set({
-			position: position
-		});
+	sendPlayerData(data) {
+		this.playersRecord.set('playerData', data);
+	}
+
+	resolvePlayerUpdates(playersInScene) {
+		const result = {
+			playersEntered: [],
+			playersExited: [] // TODO
+		};
+
+		for (let clientId in this.latestPlayersUpdate) {
+			if (clientId === this.clientId) {
+				continue;
+			}
+
+			const playerUpdate = deserialize(this.latestPlayersUpdate[clientId]);
+			
+			if (!playersInScene[clientId]) {
+				result.playersEntered.push({
+					clientId: clientId,
+					position: playerUpdate.position
+				});
+			} else {
+				playersInScene[clientId].position.set(playerUpdate.position);
+			}
+		}
+
+		for (let clientId in playersInScene) {
+			if (!this.latestPlayersUpdate[clientId]) {
+				result.playersExited.push(clientId);
+			}
+		}
+
+		return result;
 	}
 }
