@@ -17,7 +17,7 @@ window.checkPos = function(obj) {
 }
 
 
-// TODO: move to util
+// TODO: move to Player
 function serialize(playersUpdate) {
 	const serialized = {};
 	for (let clientId in playersUpdate) {
@@ -26,6 +26,9 @@ function serialize(playersUpdate) {
 				x: playersUpdate[clientId].position.x,
 				y: playersUpdate[clientId].position.y,
 				z: playersUpdate[clientId].position.z
+			},
+			head: {
+				quaternion: playersUpdate[clientId].head.quaternion.toArray()
 			},
 			color: playersUpdate[clientId].color
 		};
@@ -101,7 +104,6 @@ class Scene {
 			window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
 			const animate = () => {
-
 				let hackysackPosition;
 				if (this.communication.isHost) {
 					hackysackPosition = this.physics.update();
@@ -113,7 +115,7 @@ class Scene {
 				console.assert(checkPos(this.players));
 				const result = this.communication.resolvePlayerUpdates(this.players);
 				console.assert(checkPos(this.players));
-				
+
 				if (result.playersEntered.length) {
 					console.debug('enter', result.playersEntered)
 				}
@@ -152,6 +154,7 @@ class Scene {
 				if (this.scoreBoard) {
 					this.scoreBoard.lookAt(new THREE.Vector3(this.camera.position.x, this.scoreBoard.position.y, this.camera.position.z));
 				}
+
 
 				this.sendPlayerData(serialize(this.players))
 					
@@ -196,8 +199,7 @@ class Scene {
 			2.5 - Math.max(Math.random() * 5, 2)
 		);
 	
-		console.log(this.physics);
-		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack, this.physics);
+		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack, null, this.physics);
 		this.scene.add(this.localPlayer);
 		this.players[this.communication.clientId] = this.localPlayer;
 

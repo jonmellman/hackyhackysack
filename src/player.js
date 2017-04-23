@@ -12,7 +12,6 @@ class Player extends THREE.Object3D {
         super();
         this.isLocalPlayer = isLocalPlayer;
         this.communication = communication;
-        //debugger;
 
         this.config = {
             HAND_SIZE: 0.1, 
@@ -49,7 +48,6 @@ class Player extends THREE.Object3D {
     createPrefab(spawnLocation, lookatObject) {
         this.head = new THREE.Group();
         this.add(this.head);
-
         this.createHead();
        
         if (this.isLocalPlayer) {
@@ -61,6 +59,11 @@ class Player extends THREE.Object3D {
         this.showHead();
         
         this.position.copy(spawnLocation);
+
+        // test if we're syncing rotations
+        this.head.rotateX(Math.random() * 5);
+        this.head.rotateY(Math.random() * 5);
+        this.head.rotateY(Math.random()) * 5;
     }
 
     update() {

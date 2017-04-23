@@ -1,15 +1,21 @@
-// TODO: move to util
+// TODO: move to Player
 function deserialize(playerData) {
 	console.assert(playerData.position.x !== undefined);
 	console.assert(playerData.position.y !== undefined);
 	console.assert(playerData.position.z !== undefined);
+
+	console.assert(playerData.head.quaternion.length === 4)
+	console.assert(playerData.head.quaternion.every(el => el !== undefined))
 	return {
 		position: new THREE.Vector3(
 			playerData.position.x,
 			playerData.position.y,
 			playerData.position.z
 		),
-		color: new THREE.Color(playerData.color)
+		color: new THREE.Color(playerData.color),
+		head: {
+			quaternion: (new THREE.Quaternion()).fromArray(playerData.head.quaternion)
+		}
 	};
 }
 
@@ -119,11 +125,12 @@ class Communication {
 			const playerUpdate = deserialize(this.latestPlayersUpdate[clientId]);
 			
 			if (!playersInScene[clientId]) {
-				const playerEntered = deserialize(playerUpdate);
+				const playerEntered = playerUpdate;
 				playerEntered.clientId = clientId;
 				result.playersEntered.push(playerEntered);
 			} else {
 				playersInScene[clientId].position.copy(playerUpdate.position);
+				playersInScene[clientId].head.quaternion.copy(playerUpdate.head.quaternion);
 			}
 		}
 
