@@ -1,90 +1,83 @@
+function Player(isLocalPlayer, communication, spawnLocation, lookatObject) {
+    THREE.Object3D.call(this);
 
+    this.isLocalPlayer = true;
+    this.communication = communication;
+    
+    this.head = "";
+    this.leftHand = "";
+    this.rightHand = "";
+    this.camera = null;
 
+    this.createPrefab(lookatObject);
+}
 
-class Player extends THREE.Group {
-    constructor(isLocalPlayer, communication, spawnLocation, lookatObject) {
-        this.head = "";
-        this.leftHand = "";
-        this.rightHand = "";
-        // this.clientId = "";
-        this.networkId = "";
-        this.communication = communication;
+Player.prototype = Object.create( THREE.Object3D.prototype );
+Player.prototype.constructor = Player;
 
-        this.camera = null;
+Player.prototype.createPrefab = function(lookatObject) {
+    if (this.isLocalPlayer) {
+        //create a camera
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.add(this.camera);
 
-        //Create the prefab
-        this.createPrefab(lookatObject);
-
+        this.camera.lookAt(lookatObject.quaternion);
     }
+    else{
+        //create a head
+        
+    }
+    this.addControllers(this.camera);
+}
 
-
-    createPrefab(lookatObject) {
-        if (this.isLocalPlayer) {
-            //create a camera
-            this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            this.add(this.camera);
-
-            this.camera.lookAt(lookatObject.quaternion);
+Player.prototype.update = function() {
+    if (this.isLocalPlayer) {
+        if (this.leftHand) {
+            this.leftHand.update();
+            this.rightHand.update();
         }
-        else{
-            //create a head
-            
-        }
-        this.addControllers();
+        this.controls.update();
     }
-
-
-    update() {
-
-        if (this.isLocalPlayer) {
-            //read from inputs and broadcast
-
-            //
-        }
-        else {
-            //recieve
-        }
+    else {
+        //recieve
     }
+}
 
-
-    //Boradcast realtime info
-    broadcast() {
-
-
+Player.prototype.broadcast = function() {
+    if (this.isLocalPlayer) {
+        this.communication.sendPlayerPosition(this.camera.position);
     }
+}
 
-    addControllers(camera) {
+Player.prototype.addControllers = function(camera) {
 
-        if (this.isLocalPlayer) {
-            this.controls = new THREE.VRControls(camera);
-            this.controls.standing = true;
+    if (this.isLocalPlayer) {
+        this.controls = new THREE.VRControls(camera);
+        this.controls.standing = true;
 
-            this.leftHand = new THREE.ViveController(0);
-            this.leftHand.standingMatrix = this.controls.getStandingMatrix();
-            this.rightHand = new THREE.ViveController(1);
-            this.rightHand.standingMatrix = this.controls.getStandingMatrix();
-        }
-        var controllerMesh = this.buildControllerMesh();
-        this.leftHand.add(controllerMesh.clone());
-        this.rightHand.add(controllerMesh.clone());
-
-        this.add(this.leftHand);
-        this.add(this.rightHand);
+        this.leftHand = new THREE.ViveController(0);
+        this.leftHand.standingMatrix = this.controls.getStandingMatrix();
+        this.rightHand = new THREE.ViveController(1);
+        this.rightHand.standingMatrix = this.controls.getStandingMatrix();
     }
+    var controllerMesh = this.buildControllerMesh();
+    this.leftHand.add(controllerMesh.clone());
+    this.rightHand.add(controllerMesh.clone());
+
+    this.add(this.leftHand);
+    this.add(this.rightHand);
+}
 
 
-    //Loads a basic cube for the controller mesh
-    buildControllerMesh() {
-        var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-        var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
-        object.position.x = 0;
-        object.position.y = 0;
-        object.position.z = 0;
-        object.scale.x = 1;
-        object.scale.y = 1;
-        object.scale.z = 1;
-        return object;
-    }
-
-
+//Loads a basic cube for the controller mesh
+Player.prototype.buildControllerMesh = function() {
+    var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
+    object.position.x = 0;
+    object.position.y = 0;
+    object.position.z = 0;
+    object.scale.x = 1;
+    object.scale.y = 1;
+    object.scale.z = 1;
+    return object;
 }

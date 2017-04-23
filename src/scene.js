@@ -41,7 +41,9 @@ class Scene {
 					hackysackPosition = this.communication.getHackysackPosition();
 				}
 
-				this.communication.sendPlayerPosition(this.camera.position);
+				for (let clientId in this.players) {
+					this.players[clientId].update();
+				}
 
 				if (hackysackPosition) {
 					this.hackysack.position.copy(hackysackPosition);
@@ -60,11 +62,6 @@ class Scene {
 	}
 
 	animateVR() {
-		if (this.controller1) {
-			this.controller1.update();
-			this.controller2.update();
-		}
-		this.controls.update();
 		this.effect.render(this.scene, this.camera);
 	}
 
@@ -88,8 +85,6 @@ class Scene {
 		this.container.appendChild(this.renderer.domElement);
 
 		this.scene = new ThreeScene();
-		
-		this.scene.add(this.cameraRig);
 
 		//create spawn location
 		var spawnLocation = new THREE.Vector3(
@@ -103,8 +98,9 @@ class Scene {
 		
 		var player = new Player(true, this.communication, spawnLocation, this.hackysack);
 		this.players[this.communication.clientId] = player;
+		this.camera = player.camera;
 
-		this.scene.add(player.getObject());
+		this.scene.add(player);
 	}
 
 	createMeshes() {
@@ -153,7 +149,6 @@ class Scene {
 	}
 
 	setupVR() {
-		this.addControllers(this.scene, this.camera);
 		this.effect = new THREE.VREffect(this.renderer);
 		WEBVR.getVRDisplay((display) => {
 			document.body.appendChild(WEBVR.getButton(display, this.renderer.domElement));
