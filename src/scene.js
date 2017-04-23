@@ -8,7 +8,8 @@ function serialize(playersUpdate) {
 	const serialized = {};
 	for (let clientId in playersUpdate) {
 		serialized[clientId] = {
-			position: playersUpdate[clientId].position
+			position: playersUpdate[clientId].position,
+			color: playersUpdate[clientId].color
 		};
 	}
 	return serialized;
@@ -98,17 +99,16 @@ class Scene {
 					console.debug('exit', result.playersExited);
 				}
 
-				for (let playerExited of result.playersEntered) {
-					if (playerExited !== this.communication.clientId) {
-						delete this.players[playerExited]
-					}
+				for (let playerExited of result.playersExited) {
+					delete this.players[playerExited]
 				}
 				for (let playerEntered of result.playersEntered) {
 					this.players[playerEntered.clientId] = new Player(
 						false,
 						this.communication,
 						playerEntered.position,
-						this.hackysack
+						this.hackysack,
+						playerEntered.color
 					);
 					this.scene.add(this.players[playerEntered.clientId]);
 				}
@@ -177,15 +177,8 @@ class Scene {
 
 		this.overheadCamera = new OverheadCamera(this.communication, this.hackysack);
 		this.scene.add(this.overheadCamera);
-		this.camera = this.overheadCamera;
 
 		this.createMeshes();
-
-		var player = new Player(true, this.communication, spawnLocation, this.hackysack);
-		this.players[this.communication.clientId] = player;
-		this.camera = player.camera;
-
-		this.scene.add(player);
 		this.toggleVR(false);
 	}
 

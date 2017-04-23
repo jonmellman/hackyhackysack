@@ -1,5 +1,14 @@
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return new THREE.Color(color);
+}
+
 class Player extends THREE.Object3D {
-    constructor(isLocalPlayer, communication, spawnLocation, lookatObject) {
+    constructor(isLocalPlayer, communication, spawnLocation, lookatObject, color) {
         super();
         this.isLocalPlayer = isLocalPlayer;
         this.communication = communication;
@@ -8,29 +17,24 @@ class Player extends THREE.Object3D {
         this.leftHand = "";
         this.rightHand = "";
         this.camera = null;
+        this.color = color || getRandomColor();
 
         this.createPrefab(spawnLocation, lookatObject);
     }
     createPrefab(spawnLocation, lookatObject) {
         this.head = new THREE.Group();
         this.add(this.head);
-        this.position.copy(spawnLocation);
+        this.position.set(spawnLocation.x, spawnLocation.y, spawnLocation.z);
 
         if (this.isLocalPlayer) {
             this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             this.camera.lookAt(lookatObject.quaternion);
             this.head.add(this.camera);
+        }
 
-            // temporary
-            const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const headMesh = new THREE.Mesh(headGeometry, new THREE.MeshLambertMaterial({ color: 0xFF0000 }));
-            this.head.add(headMesh);
-        }
-        else {
-            const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const headMesh = new THREE.Mesh(headGeometry, new THREE.MeshLambertMaterial({ color: 0xFF0000 }));
-            this.head.add(headMesh);
-        }
+        const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: this.color }));
+        this.head.add(headMesh);
         this.addControllers(this.head);
     }
 

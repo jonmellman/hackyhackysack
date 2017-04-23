@@ -5,7 +5,8 @@ function deserialize(playerData) {
 			playerData.position.x,
 			playerData.position.y,
 			playerData.position.z
-		)
+		),
+		color: new THREE.Color(playerData.color)
 	};
 }
 
@@ -113,17 +114,16 @@ class Communication {
 			const playerUpdate = deserialize(this.latestPlayersUpdate[clientId]);
 			
 			if (!playersInScene[clientId]) {
-				result.playersEntered.push({
-					clientId: clientId,
-					position: playerUpdate.position
-				});
+				const playerEntered = deserialize(playerUpdate);
+				playerEntered.clientId = clientId;
+				result.playersEntered.push(playerEntered);
 			} else {
 				playersInScene[clientId].position.set(playerUpdate.position);
 			}
 		}
 
 		for (let clientId in playersInScene) {
-			if (!this.latestPlayersUpdate[clientId]) {
+			if (!this.latestPlayersUpdate[clientId] && clientId !== this.clientId) {
 				result.playersExited.push(clientId);
 			}
 		}
