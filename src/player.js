@@ -26,6 +26,7 @@ class Player extends THREE.Object3D {
     }
 
     update() {
+        console.log('update')
         if (this.isLocalPlayer) {
             if (this.leftHand) {
                 this.leftHand.update();

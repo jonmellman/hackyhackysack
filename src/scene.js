@@ -84,24 +84,9 @@ class Scene {
 		this.container.appendChild(this.renderer.domElement);
 
 		this.scene = new ThreeScene();
-
-		const spawnLocation = new THREE.Vector3(
-			Math.max(Math.random() * 5, 2), 
-			 1.6,
-			Math.max(Math.random() * 5, 2)
-		);
-
 		this.createMeshes();
-		// this.localPlayer = new OverheadCamera(this.communication, this.hackysack);
-		// this.camera = this.localPlayer;
-
-		// this.scene.add(this.localPlayer);
-
-		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
-		this.players[this.communication.clientId] = this.localPlayer;
-		this.camera = this.localPlayer.camera;
-
-		this.scene.add(this.localPlayer);
+		this.toggleVR(false);
+		this.scene.add(this.camera);
 	}
 
 	createMeshes() {
@@ -154,13 +139,27 @@ class Scene {
 		WEBVR.getVRDisplay((display) => {
 			document.body.appendChild(WEBVR.getButton(display, this.renderer.domElement));
 			window.addEventListener( 'vrdisplaypresentchange', () => {
-				if (display.isPresenting) {
-
-				} else {
-					console.log('??')
-				}
+				this.toggleVR(display.isPresenting);
 			});
 		});
+	}
 
+	toggleVR(enable) {
+		if (enable) {
+			const spawnLocation = new THREE.Vector3(
+				Math.max(Math.random() * 5, 2), 
+				 1.6,
+				Math.max(Math.random() * 5, 2)
+			);
+			this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
+			this.players[this.communication.clientId] = this.localPlayer;
+			this.camera = this.localPlayer.camera;
+		} else {
+			delete this.localPlayer;
+			delete this.players[this.communication.clientId];
+			this.camera = new OverheadCamera(this.communication, this.hackysack);
+		}
+
+		this.scene.add(this.camera);
 	}
 }
