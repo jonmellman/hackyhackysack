@@ -3,12 +3,30 @@ const BasicShadowMap = THREE.BasicShadowMap;
 const ThreeScene = THREE.Scene;
 const PerspectiveCamera = THREE.PerspectiveCamera;
 
+window.checkPos = function(obj) {
+	for (let key in obj) {
+		if (obj[key].position.x === undefined ||
+			obj[key].position.y === undefined ||
+			obj[key].position.z === undefined) {
+			
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 // TODO: move to util
 function serialize(playersUpdate) {
 	const serialized = {};
 	for (let clientId in playersUpdate) {
 		serialized[clientId] = {
-			position: playersUpdate[clientId].position,
+			position: {
+				x: playersUpdate[clientId].position.x,
+				y: playersUpdate[clientId].position.y,
+				z: playersUpdate[clientId].position.z
+			},
 			color: playersUpdate[clientId].color
 		};
 	}
@@ -83,6 +101,7 @@ class Scene {
 			window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
 			const animate = () => {
+
 				let hackysackPosition;
 				if (this.communication.isHost) {
 					hackysackPosition = this.physics.update();
@@ -91,7 +110,10 @@ class Scene {
 					hackysackPosition = this.communication.getHackysackPosition();
 				}
 
+				console.assert(checkPos(this.players));
 				const result = this.communication.resolvePlayerUpdates(this.players);
+				console.assert(checkPos(this.players));
+				
 				if (result.playersEntered.length) {
 					console.debug('enter', result.playersEntered)
 				}
@@ -117,7 +139,6 @@ class Scene {
 					this.players[clientId].update();
 				}
 
-
 				if (hackysackPosition) {
 					this.hackysack.position.copy(hackysackPosition);
 					this.renderer.render(this.scene, this.camera);
@@ -132,6 +153,7 @@ class Scene {
 				}
 
 				this.sendPlayerData(serialize(this.players))
+					
 				requestAnimationFrame(animate);
 			}
 			animate();
@@ -296,16 +318,10 @@ class Scene {
 		if (enable) {
 			this.camera = this.localPlayer.camera;
 			this.localPlayer.hideHead();
-			//debugger;
-
-			//console.log(this.localPlayer.camera.position);
 			this.onWindowResize();
 		} else {
 			this.camera = this.overheadCamera;
 			this.localPlayer.showHead();
 		}
-
-		//camera is changing
-		
 	}
 }

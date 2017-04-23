@@ -1,5 +1,8 @@
 // TODO: move to util
 function deserialize(playerData) {
+	console.assert(playerData.position.x !== undefined);
+	console.assert(playerData.position.y !== undefined);
+	console.assert(playerData.position.z !== undefined);
 	return {
 		position: new THREE.Vector3(
 			playerData.position.x,
@@ -56,6 +59,7 @@ class Communication {
 			});
 
 			this.playersRecord.subscribe('playerData', (playersUpdate) => {
+				console.assert(checkPos(playersUpdate));
 				this.latestPlayersUpdate = playersUpdate;
 			});
 
@@ -97,13 +101,14 @@ class Communication {
 	}
 
 	sendPlayerData(data) {
+		console.assert(checkPos(data));
 		this.playersRecord.set('playerData', data);
 	}
 
 	resolvePlayerUpdates(playersInScene) {
 		const result = {
 			playersEntered: [],
-			playersExited: [] // TODO
+			playersExited: []
 		};
 
 		for (let clientId in this.latestPlayersUpdate) {
@@ -118,7 +123,7 @@ class Communication {
 				playerEntered.clientId = clientId;
 				result.playersEntered.push(playerEntered);
 			} else {
-				playersInScene[clientId].position.set(playerUpdate.position);
+				playersInScene[clientId].position.copy(playerUpdate.position);
 			}
 		}
 

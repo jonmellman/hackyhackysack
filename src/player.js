@@ -61,7 +61,7 @@ class Player extends THREE.Object3D {
         this.addControllers(this.head);
         this.showHead();
         
-        this.position.set(spawnLocation.x, spawnLocation.y, spawnLocation.z);
+        this.position.copy(spawnLocation);
     }
 
     update() {
