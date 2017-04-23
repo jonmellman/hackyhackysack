@@ -21,14 +21,13 @@ class Scene {
 	setup() {
 		return new Promise(resolve => {
 			this.setupThree();
-			if (WEBVR.isAvailable()) {
+			if (this.config.isWebVRAvailable) {
 				this.setupVR();
 			}
 			this.physics.setupWorld({
 				hackysack: this.hackysack,
 				ground: this.ground
 			});
-
 
 			window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
@@ -50,7 +49,7 @@ class Scene {
 					this.renderer.render(this.scene, this.camera);
 				}
 
-				if (WEBVR.isAvailable()) {
+				if (this.config.isWebVRAvailable) {
 					this.animateVR();
 				}
 				requestAnimationFrame(animate);
@@ -86,21 +85,18 @@ class Scene {
 
 		this.scene = new ThreeScene();
 
-		//create spawn location
-		var spawnLocation = new THREE.Vector3(
+		const spawnLocation = new THREE.Vector3(
 			Math.max(Math.random() * 5, 2), 
 			 1.6,
 			Math.max(Math.random() * 5, 2)
 		);
 
-
 		this.createMeshes();
-		
-		var player = new Player(true, this.communication, spawnLocation, this.hackysack);
-		this.players[this.communication.clientId] = player;
-		this.camera = player.camera;
+		this.localPlayer = new Player(true, this.communication, spawnLocation, this.hackysack);
+		this.players[this.communication.clientId] = this.localPlayer;
+		this.camera = this.localPlayer.camera;
 
-		this.scene.add(player);
+		this.scene.add(this.localPlayer);
 	}
 
 	createMeshes() {

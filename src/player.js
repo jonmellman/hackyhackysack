@@ -9,19 +9,18 @@ function Player(isLocalPlayer, communication, spawnLocation, lookatObject) {
     this.rightHand = "";
     this.camera = null;
 
-    this.createPrefab(lookatObject);
+    this.createPrefab(spawnLocation, lookatObject);
 }
 
-Player.prototype = Object.create( THREE.Object3D.prototype );
+Player.prototype = Object.create(THREE.Object3D.prototype);
 Player.prototype.constructor = Player;
 
-Player.prototype.createPrefab = function(lookatObject) {
+Player.prototype.createPrefab = function(spawnLocation, lookatObject) {
     if (this.isLocalPlayer) {
-        //create a camera
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.add(this.camera);
-
+        this.camera.position.set(spawnLocation);
         this.camera.lookAt(lookatObject.quaternion);
+        this.add(this.camera);
     }
     else{
         //create a head
@@ -35,22 +34,19 @@ Player.prototype.update = function() {
         if (this.leftHand) {
             this.leftHand.update();
             this.rightHand.update();
+            this.controls.update();
         }
-        this.controls.update();
     }
     else {
-        //recieve
+        this.broadcast();
     }
 }
 
 Player.prototype.broadcast = function() {
-    if (this.isLocalPlayer) {
-        this.communication.sendPlayerPosition(this.camera.position);
-    }
+    this.communication.sendPlayerPosition(this.camera.position);
 }
 
 Player.prototype.addControllers = function(camera) {
-
     if (this.isLocalPlayer) {
         this.controls = new THREE.VRControls(camera);
         this.controls.standing = true;
@@ -60,7 +56,7 @@ Player.prototype.addControllers = function(camera) {
         this.rightHand = new THREE.ViveController(1);
         this.rightHand.standingMatrix = this.controls.getStandingMatrix();
     }
-    var controllerMesh = this.buildControllerMesh();
+    const controllerMesh = this.buildControllerMesh();
     this.leftHand.add(controllerMesh.clone());
     this.rightHand.add(controllerMesh.clone());
 
@@ -68,16 +64,14 @@ Player.prototype.addControllers = function(camera) {
     this.add(this.rightHand);
 }
 
-
-//Loads a basic cube for the controller mesh
 Player.prototype.buildControllerMesh = function() {
-    var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
-    object.position.x = 0;
-    object.position.y = 0;
-    object.position.z = 0;
-    object.scale.x = 1;
-    object.scale.y = 1;
-    object.scale.z = 1;
-    return object;
+    const controllerGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const controllerMaterial = new THREE.Mesh(controllerGeometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
+    controllerMaterial.position.x = 0;
+    controllerMaterial.position.y = 0;
+    controllerMaterial.position.z = 0;
+    controllerMaterial.scale.x = 1;
+    controllerMaterial.scale.y = 1;
+    controllerMaterial.scale.z = 1;
+    return controllerMaterial;
 }

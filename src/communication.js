@@ -7,6 +7,10 @@ class Communication {
 		window.disconnectHost = () => {
 			this.gameRecord.set('inProgress', false);
 		};
+
+		window.forceClientRefresh = () => {
+			this.gameRecord.set('forceRefresh', true);
+		};
 	}
 
 	connect() {
@@ -36,6 +40,13 @@ class Communication {
 			this.hackysackRecord = this.ds.record.getRecord('hackysack');
 			this.hackysackRecord.subscribe('position', value => {
 				this.hackysackPosition = value;
+			});
+
+			this.gameRecord.subscribe('forceRefresh', (doIt) => {
+				if (doIt) {
+					this.gameRecord.set('forceRefresh', false);
+					window.location.reload();
+				}
 			});
 		})
 		.then(() => {
