@@ -28,7 +28,8 @@ function serialize(playersUpdate) {
 				z: playersUpdate[clientId].position.z
 			},
 			head: {
-				quaternion: playersUpdate[clientId].head.quaternion.toArray()
+				quaternion: playersUpdate[clientId].head.quaternion.toArray(),
+				position: playersUpdate[clientId].head.position.toArray(),
 			},
 			color: playersUpdate[clientId].color
 		};

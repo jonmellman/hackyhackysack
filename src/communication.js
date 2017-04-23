@@ -14,7 +14,8 @@ function deserialize(playerData) {
 		),
 		color: new THREE.Color(playerData.color),
 		head: {
-			quaternion: (new THREE.Quaternion()).fromArray(playerData.head.quaternion)
+			quaternion: (new THREE.Quaternion()).fromArray(playerData.head.quaternion),
+			position: (new THREE.Vector3()).fromArray(playerData.head.position)
 		}
 	};
 }
@@ -131,6 +132,7 @@ class Communication {
 			} else {
 				playersInScene[clientId].position.copy(playerUpdate.position);
 				playersInScene[clientId].head.quaternion.copy(playerUpdate.head.quaternion);
+				playersInScene[clientId].head.position.copy(playerUpdate.head.position);
 			}
 		}
 
