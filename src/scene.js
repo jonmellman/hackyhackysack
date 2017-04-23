@@ -21,7 +21,9 @@ class Scene {
 	setup() {
 		return new Promise(resolve => {
 			this.setupThree();
-			this.setupVR();
+			if (WEBVR.isAvailable()) {
+				this.setupVR();
+			}
 			this.physics.setupWorld({
 				hackysack: this.hackysack,
 				ground: this.ground
@@ -46,7 +48,9 @@ class Scene {
 					this.renderer.render(this.scene, this.camera);
 				}
 
-				this.animateVR();
+				if (WEBVR.isAvailable()) {
+					this.animateVR();
+				}
 				requestAnimationFrame(animate);
 			}
 			animate();
@@ -61,14 +65,14 @@ class Scene {
 			this.controller2.update();
 		}
 		this.controls.update();
-		effect.render(scene, camera);
+		this.effect.render(this.scene, this.camera);
 	}
 
 
 	onWindowResize() {
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
-		effect.setSize(window.innerWidth, window.innerHeight);
+		this.effect.setSize(window.innerWidth, window.innerHeight);
 	}
 
 
@@ -130,7 +134,7 @@ class Scene {
 		this.ground.rotation.x = -Math.PI / 2;
 
 
-		this.scene.add(buildControllerBasic());
+		this.scene.add(this.buildControllerBasic());
 		this.scene.add(this.hackysack);
 		this.scene.add(this.room);
 		this.scene.add(this.ground);
@@ -142,16 +146,12 @@ class Scene {
 
 		this.controller1 = new THREE.ViveController(0);
 		this.controller1.standingMatrix = this.controls.getStandingMatrix();
-		this.controller1.addEventListener('triggerdown', onTriggerDown);
-		this.controller1.addEventListener('triggerup', onTriggerUp);
 		this.cameraRig.add(this.controller1);
 		this.controller2 = new THREE.ViveController(1);
 		this.controller2.standingMatrix = this.controls.getStandingMatrix();
-		this.controller2.addEventListener('triggerdown', onTriggerDown);
-		this.controller2.addEventListener('triggerup', onTriggerUp);
 		this.cameraRig.add(this.controller2);
 
-		var controllerObject = buildControllerBasic();
+		var controllerObject = this.buildControllerBasic();
 		if (controllerObject != null) {
 			this.controller1.add(controllerObject.clone());
 			this.controller2.add(controllerObject.clone());
@@ -185,8 +185,9 @@ class Scene {
 	}
 
 	setupVR() {
+		this.addControllers();
 		this.effect = new THREE.VREffect(this.renderer);
-		WEBVR.getVRDisplay(function (display) {
+		WEBVR.getVRDisplay((display) => {
 			document.body.appendChild(WEBVR.getButton(display, this.renderer.domElement));
 		});
 	}
