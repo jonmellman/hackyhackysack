@@ -9,8 +9,8 @@ class Physics {
 		this.world.gravity.set(0, -this.config.gravity, 0);
 		this.world.broadphase = new CANNON.NaiveBroadphase();
 		this.world.solver.iterations = 20;
-		this.setupGround(bodies.plane);
-		this.setupBall(bodies.ball);
+		this.setupGround(bodies.ground);
+		this.setupHackysack(bodies.hackysack);
 	}
 
 	setupGround(plane) {
@@ -26,22 +26,22 @@ class Physics {
 		this.world.add(this.ground);
 	}
 
-	setupBall(ball) {
-		this.ball = new CANNON.Body({
-			mass: this.config.ballMass,
-			shape: new CANNON.Sphere(this.config.ballRadius),
+	setupHackysack(hackysack) {
+		this.hackysack = new CANNON.Body({
+			mass: this.config.hackysackMass,
+			shape: new CANNON.Sphere(this.config.hackysackRadius),
 			material: new CANNON.Material()
 		});
-		this.addContactMaterial(this.ball.material, this.ground.material, .7, .3);
-		this.ball.position.copy(ball.position);
-		this.ball.quaternion.copy(ball.quaternion);
-		this.ball.linearDamping = 0.1;
-		this.world.add(this.ball);
+		this.addContactMaterial(this.hackysack.material, this.ground.material, .7, .3);
+		this.hackysack.position.copy(hackysack.position);
+		this.hackysack.quaternion.copy(hackysack.quaternion);
+		this.hackysack.linearDamping = 0.1;
+		this.world.add(this.hackysack);
 	}
 
 	update() {
 		this.world.step(this.config.timeStep)
-		return this.ball.position;
+		return this.hackysack.position;
 	}
 
 	addContactMaterial(mat1, mat2, bounce, friction) {

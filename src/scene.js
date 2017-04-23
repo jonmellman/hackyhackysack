@@ -12,7 +12,7 @@ class Scene {
 		this.container = document.querySelector('#container');
 		this.communication.setCallbacks({
 			recievedPlayerMove: this.onRecievedPlayerMove.bind(this),
-			recievedBallMove: this.onRecievedBallMove.bind(this),
+			recievedHackysackMove: this.onRecievedHackysackMove.bind(this),
 			recievedHostDiconnect: this.onRecievedHostDisconnect.bind(this)
 		});
 		this.players = {};
@@ -23,23 +23,23 @@ class Scene {
 			this.setupThree();
 			this.setupVR();
 			this.physics.setupWorld({
-				ball: this.sphere,
-				plane: this.plane
+				hackysack: this.hackysack,
+				ground: this.ground
 			});
 
 			const animate = () => {
-				let ballPosition;
+				let hackysackPosition;
 				if (this.communication.isHost) {
-					ballPosition = this.physics.update();
-					this.communication.sendBallPosition(ballPosition);
+					hackysackPosition = this.physics.update();
+					this.communication.sendHackysackPosition(hackysackPosition);
 				} else {
-					ballPosition = this.communication.getBallPosition();
+					hackysackPosition = this.communication.getHackysackPosition();
 				}
 
 				this.communication.sendPlayerPosition(this.camera.position);
 
-				if (ballPosition) {
-					this.sphere.position.copy(ballPosition);
+				if (hackysackPosition) {
+					this.hackysack.position.copy(hackysackPosition);
 					this.renderer.render(this.scene, this.camera);
 				}
 				requestAnimationFrame(animate);
@@ -67,7 +67,7 @@ class Scene {
 		this.camera.position.z = Math.max(Math.random() * 5, 2);
 
 		this.createMeshes();
-		this.camera.lookAt(this.sphere.quaternion);
+		this.camera.lookAt(this.hackysack.quaternion);
 
 		this.players[this.communication.clientId] = {
 			position: this.camera.position,
@@ -76,14 +76,14 @@ class Scene {
 	}
 
 	createMeshes() {
-		// Sphere
-		const sphereGeometry = new THREE.SphereGeometry(this.config.ballRadius, 4, 4);
-		const sphereMaterial = new THREE.MeshBasicMaterial({
+		// hackysack
+		const hackysackGeometry = new THREE.SphereGeometry(this.config.hackysackRadius, 4, 4);
+		const hackysackMaterial = new THREE.MeshBasicMaterial({
 			color: this.communication.isHost ? 0xcc0000 : 0x8B4513,
 			wireframe: true
 		});
-		this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-		this.sphere.position.y = 2;
+		this.hackysack = new THREE.Mesh(hackysackGeometry, hackysackMaterial);
+		this.hackysack.position.y = 2;
 
 		// Room.
 		const roomGeometry = new THREE.BoxGeometry(this.config.roomWidth, this.config.roomHeight, this.config.roomDepth, 10, 10, 10);
@@ -97,21 +97,21 @@ class Scene {
 		this.room.position.z = -5;
 
 		// Plane
-		const planeGeometry = new THREE.PlaneGeometry(this.config.roomWidth, this.config.roomDepth);
-		const planeMaterial = new THREE.MeshBasicMaterial( {color: 0xfffff0, side: THREE.FrontSide} );
-		this.plane = new THREE.Mesh(planeGeometry, planeMaterial);
-		this.plane.rotation.x = -Math.PI / 2;
+		const groundGeometry = new THREE.PlaneGeometry(this.config.roomWidth, this.config.roomDepth);
+		const groundMaterial = new THREE.MeshBasicMaterial( {color: 0xfffff0, side: THREE.FrontSide} );
+		this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
+		this.ground.rotation.x = -Math.PI / 2;
 
-		this.scene.add(this.sphere);
+		this.scene.add(this.hackysack);
 		this.scene.add(this.room);
-		this.scene.add(this.plane);
+		this.scene.add(this.ground);
 	}
 
 	onRecievedPlayerMove(playerId, position) {
 
 	}
 
-	onRecievedBallMove(position) {
+	onRecievedHackysackMove(position) {
 
 	}
 

@@ -1,7 +1,7 @@
 const INITIAL_CONFIG = {
 	gravity: 9.8,
-	ballMass: 1,
-	ballRadius: .1,
+	hackysackMass: 1,
+	hackysackRadius: .1,
 	playerWidth: 1,
 	playerHeight: 1,
 	playerDepth: 1,

@@ -1,7 +1,7 @@
 class Communication {
 	constructor(emitter) {
 		this.callbacks = {};
-		this.ballPosition;
+		this.hackysackPosition;
 
 		// for restarting during dev
 		window.disconnectHost = () => {
@@ -33,9 +33,9 @@ class Communication {
 		.then(() => {
 			this.playersRecord = this.ds.record.getRecord(`player/${this.clientId}`);
 			this.gameRecord = this.ds.record.getRecord('game')
-			this.ballRecord = this.ds.record.getRecord('ball');
-			this.ballRecord.subscribe('position', value => {
-				this.ballPosition = value;
+			this.hackysackRecord = this.ds.record.getRecord('hackysack');
+			this.hackysackRecord.subscribe('position', value => {
+				this.hackysackPosition = value;
 			});
 		})
 		.then(() => {
@@ -60,12 +60,12 @@ class Communication {
 		this.gameRecord.set('inProgress', true);
 	}
 
-	sendBallPosition(ballPosition) {
-		this.ballRecord.set('position', ballPosition);
+	sendHackysackPosition(hackysackPosition) {
+		this.hackysackRecord.set('position', hackysackPosition);
 	}
 
-	getBallPosition() {
-		return this.ballPosition;
+	getHackysackPosition() {
+		return this.hackysackPosition;
 	}
 
 	sendPlayerPosition(position) {
