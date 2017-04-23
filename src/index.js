@@ -19,4 +19,7 @@ class Game {
 
 $(document).ready(() => {
 	window.game = new Game();
+	if (WEBVR.isAvailable() === false) {
+        document.body.appendChild(WEBVR.getMessage());
+    }
 })
