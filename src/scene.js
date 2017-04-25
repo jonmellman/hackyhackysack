@@ -105,6 +105,7 @@ class Scene {
 
 			const animate = () => {
 				let hackysackPosition;
+				//hackysackPosition = this.physics.update();
 				if (this.communication.isHost) {
 					hackysackPosition = this.physics.update();
 					this.communication.sendHackysackPosition(hackysackPosition);
@@ -180,7 +181,7 @@ class Scene {
 
 	setupThree() {
 		this.renderer = new WebGLRenderer({ antialias: true });
-		this.renderer.setClearColor(0x505050);
+		this.renderer.setClearColor(0xcefff7);
 		this.renderer.sortObjects = false;
 		this.renderer.setPixelRatio(window.devicePixelRatio);
 		this.renderer.shadowMap.enabled = true;
@@ -212,34 +213,41 @@ class Scene {
 
 	createMeshes() {
 		// hackysack
-		const hackysackGeometry = new THREE.SphereGeometry(this.config.hackysackRadius, 4, 4);
-		const hackysackMaterial = new THREE.MeshBasicMaterial({
+		const hackysackGeometry = new THREE.SphereGeometry(this.config.hackysackRadius, 32, 32);
+		const hackysackMaterial = new THREE.MeshLambertMaterial({
 			color: this.communication.isHost ? 0xcc0000 : 0x8B4513,
-			wireframe: true
+			wireframe: false
 		});
 		this.hackysack = new THREE.Mesh(hackysackGeometry, hackysackMaterial);
 		this.hackysack.position.y = 2;
+		this.scene.add(this.hackysack);
 
 		// Room.
-		const roomGeometry = new THREE.BoxGeometry(this.config.roomWidth, this.config.roomHeight, this.config.roomDepth, 10, 10, 10);
-		const roomMaterial = new THREE.MeshBasicMaterial({
-			wireframe: true,
-			opacity: 0.3,
-			transparent: true,
-			side: THREE.BackSide
-		});
-		this.room = new THREE.Mesh(roomGeometry, roomMaterial);
-		this.room.position.z = -5;
+		// const roomGeometry = new THREE.BoxGeometry(this.config.roomWidth, this.config.roomHeight, this.config.roomDepth, 10, 10, 10);
+		// const roomMaterial = new THREE.MeshBasicMaterial({
+		// 	wireframe: true,
+		// 	opacity: 0.3,
+		// 	transparent: true,
+		// 	side: THREE.BackSide
+		// });
+		// this.room = new THREE.Mesh(roomGeometry, roomMaterial);
+		// this.room.position.z = -5;
+		//this.scene.add(this.room);
 
 		// ground
 		const groundGeometry = new THREE.PlaneGeometry(this.config.roomWidth, this.config.roomDepth);
-		const groundMaterial = new THREE.MeshBasicMaterial({ color: 0xfffff0, side: THREE.FrontSide });
+		const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x78c62d, side: THREE.FrontSide });
 		this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
 		this.ground.rotation.x = -Math.PI / 2;
-
-		this.scene.add(this.hackysack);
-		this.scene.add(this.room);
 		this.scene.add(this.ground);
+
+
+		//lights
+		var directionalLight = new THREE.DirectionalLight( {color: 0xffffff, intensity: 0.5 });
+		directionalLight.position.set(1,1,1);
+		this.scene.add( directionalLight );
+
+
 		this.setupScoreBoard();
 	}
 
@@ -253,8 +261,8 @@ class Scene {
 				resolve();
 			})
 		}).then(() => {
-			let material = new THREE.MeshBasicMaterial({
-				color: 0xcccccc,
+			let material = new THREE.MeshLambertMaterial({
+				color: 0xaef966,
 				transparent: true,
 			});
 			let geometry = new THREE.TextGeometry(this.score + '', {

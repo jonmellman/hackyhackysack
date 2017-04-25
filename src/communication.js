@@ -33,11 +33,16 @@ class Communication {
 		window.forceClientRefresh = () => {
 			this.gameRecord.set('forceRefresh', true);
 		};
+
+		this.config = {
+			//DEEPSTREAM_SERVER_HOST: "128.208.184.85:6020"
+			DEEPSTREAM_SERVER_HOST: "127.0.0.1:6020"
+		}
 	}
 
 	connect() {
 		return new Promise((resolve, reject) => {
-			this.ds = deepstream('128.208.184.85:6020').login();
+			this.ds = deepstream(this.config.DEEPSTREAM_SERVER_HOST).login();
 			this.ds.on('connectionStateChanged', e => {
 				if (e === deepstream.CONSTANTS.CONNECTION_STATE.OPEN) {
 					resolve();

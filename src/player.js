@@ -15,7 +15,8 @@ class Player extends THREE.Object3D {
 
         this.config = {
             HAND_SIZE: 0.1, 
-            HEAD_SIZE: 0.3
+            HEAD_SIZE: 0.3, 
+            HEAD_HEIGHT: 1.5
         }
         this.head = "";
         this.leftHand = "";
@@ -32,7 +33,7 @@ class Player extends THREE.Object3D {
 
     createHead() {
         const headGeometry = new THREE.BoxGeometry(this.config.HEAD_SIZE, this.config.HEAD_SIZE, this.config.HEAD_SIZE);
-        this.headMesh = new THREE.Mesh(headGeometry, new THREE.MeshBasicMaterial({ color: this.color }));
+        this.headMesh = new THREE.Mesh(headGeometry, new THREE.MeshLambertMaterial({ color: this.color }));
         this.head.add(this.headMesh);
     }
 
@@ -47,6 +48,7 @@ class Player extends THREE.Object3D {
 
     createPrefab(spawnLocation, lookatObject) {
         this.head = new THREE.Group();
+        this.head.position.set(0,this.config.HEAD_HEIGHT, 0);
         this.add(this.head);
         this.createHead();
        
@@ -93,12 +95,20 @@ class Player extends THREE.Object3D {
             this.leftHand.standingMatrix = this.controls.getStandingMatrix();
             this.rightHand = new THREE.ViveController(1);
             this.rightHand.standingMatrix = this.controls.getStandingMatrix();
+
+
+            //attach events
+            //this.rightHand.attachEventListener("triggerdown", );
         } else {
             this.leftHand = new THREE.Group();
             this.rightHand = new THREE.Group();
         }
+
+        //put the hNDS ON THE FLOOR.
+        this.leftHand.position.set(0,this.config.HAND_SIZE, 0);
+        this.rightHand.position.set(0,this.config.HAND_SIZE, 0);
+
         const controllerMesh = this.buildControllerMesh();
-        
         this.leftHand.add(controllerMesh.clone());
         this.rightHand.add(controllerMesh.clone());
 
@@ -127,7 +137,7 @@ class Player extends THREE.Object3D {
 
     buildControllerMesh() {
         const controllerGeometry = new THREE.BoxGeometry(this.config.HAND_SIZE, this.config.HAND_SIZE, this.config.HAND_SIZE);
-        const controllerMaterial = new THREE.Mesh(controllerGeometry, new THREE.MeshBasicMaterial({ color: 0xe28d16 }));
+        const controllerMaterial = new THREE.Mesh(controllerGeometry, new THREE.MeshLambertMaterial({ color: 0xe28d16 }));
         return controllerMaterial;
     }
 }

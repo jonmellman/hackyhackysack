@@ -3,9 +3,9 @@ class OverheadCamera extends THREE.PerspectiveCamera {
         super(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.communication = communication;
 
-        this.position.x = 1;
-        this.position.y = 10;
-        this.position.z = 1;
+        this.position.x = 8;
+        this.position.y = 5;
+        this.position.z = 8;
         this.lookAt(lookAtObject.quaternion);
     }
 }
