@@ -1,23 +1,4 @@
-// TODO: move to Player
-function deserialize(playerData) {
-	console.assert(playerData.position.x !== undefined);
-	console.assert(playerData.position.y !== undefined);
-	console.assert(playerData.position.z !== undefined);
 
-	console.assert(playerData.head.quaternion.length === 4)
-	console.assert(playerData.head.quaternion.every(el => el !== undefined))
-	return {
-		position: new THREE.Vector3(
-			playerData.position.x,
-			playerData.position.y,
-			playerData.position.z
-		),
-		color: new THREE.Color(playerData.color),
-		head: {
-			quaternion: (new THREE.Quaternion()).fromArray(playerData.head.quaternion)
-		}
-	};
-}
 
 class Communication {
 	constructor(emitter) {
@@ -56,40 +37,40 @@ class Communication {
 
 			this.ds.on('error', () => {
 				// server restarted?
-				setTimeout(function() {
+				setTimeout(function () {
 					window.location.reload();
 				}, 1000);
 			});
 		})
-		.then(() => {
-			this.playersRecord = this.ds.record.getRecord(`players`);
-			this.gameRecord = this.ds.record.getRecord('game');
-			this.hackysackRecord = this.ds.record.getRecord('hackysack');
-			this.hackysackRecord.subscribe('position', value => {
-				this.hackysackPosition = value;
-			});
+			.then(() => {
+				this.playersRecord = this.ds.record.getRecord(`players`);
+				this.gameRecord = this.ds.record.getRecord('game');
+				this.hackysackRecord = this.ds.record.getRecord('hackysack');
+				this.hackysackRecord.subscribe('position', value => {
+					this.hackysackPosition = value;
+				});
 
-			this.playersRecord.subscribe('playerData', (playersUpdate) => {
-				console.assert(checkPos(playersUpdate));
-				this.latestPlayersUpdate = playersUpdate;
-			});
+				this.playersRecord.subscribe('playerData', (playersUpdate) => {
+					console.assert(checkPos(playersUpdate));
+					this.latestPlayersUpdate = playersUpdate;
+				});
 
-			this.gameRecord.subscribe('forceRefresh', (doIt) => {
-				if (doIt) {
-					this.gameRecord.set('forceRefresh', false);
-					window.location.reload();
-				}
+				this.gameRecord.subscribe('forceRefresh', (doIt) => {
+					if (doIt) {
+						this.gameRecord.set('forceRefresh', false);
+						window.location.reload();
+					}
+				});
+			})
+			.then(() => {
+				return this.detectGame();
 			});
-		})
-		.then(() => {
-			return this.detectGame();
-		});
 	}
 
 	setCallbacks(callbacks) {
 		this.callbacks = callbacks;
 	}
-	
+
 	detectGame() {
 		return new Promise((resolve) => {
 			this.ds.record.snapshot('game', (error, game) => {
@@ -101,6 +82,10 @@ class Communication {
 
 	sendNewGame() {
 		this.gameRecord.set('inProgress', true);
+	}
+
+	sendEndGame() {
+		this.gameRecord.set('inProgress', false);
 	}
 
 	sendHackysackPosition(hackysackPosition) {
@@ -127,8 +112,9 @@ class Communication {
 				continue;
 			}
 
-			const playerUpdate = deserialize(this.latestPlayersUpdate[clientId]);
-			
+			//const playerUpdate = deserialize(this.latestPlayersUpdate[clientId]);
+			const playerUpdate = Player.deserialize(this.latestPlayersUpdate[clientId]);
+
 			if (!playersInScene[clientId]) {
 				const playerEntered = playerUpdate;
 				playerEntered.clientId = clientId;
