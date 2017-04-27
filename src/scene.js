@@ -116,68 +116,75 @@ class Scene {
 			window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
 			const animate = () => {
-				let hackysackPosition;
-				//hackysackPosition = this.physics.update();
-				if (this.communication.isHost) {
-					hackysackPosition = this.physics.update();
-					this.communication.sendHackysackPosition(hackysackPosition);
-				} else {
-					hackysackPosition = this.communication.getHackysackPosition();
-				}
-
-				console.assert(checkPos(this.players));
-				const result = this.communication.resolvePlayerUpdates(this.players);
-				console.assert(checkPos(this.players));
-
-				if (result.playersEntered.length) {
-					console.debug('enter', result.playersEntered)
-				}
-				if (result.playersExited.length) {
-					console.debug('exit', result.playersExited);
-				}
-
-				for (let playerExited of result.playersExited) {
-					delete this.players[playerExited]
-				}
-				for (let playerEntered of result.playersEntered) {
-					this.players[playerEntered.clientId] = new Player(
-						false,
-						this.communication,
-						playerEntered.position,
-						this.hackysack,
-						playerEntered.color,
-						this.physics
-					);
-					this.scene.add(this.players[playerEntered.clientId]);
-				}
-
-				for (let clientId in this.players) {
-					this.players[clientId].update();
-				}
-
-				if (hackysackPosition) {
-					this.hackysack.position.copy(hackysackPosition);
-					this.renderer.render(this.scene, this.camera);
-				}
-
-				if (this.config.isWebVRAvailable) {
-					this.animateVR();
-				}
-
-				if (this.scoreBoard) {
-					this.scoreBoard.lookAt(new THREE.Vector3(this.camera.position.x, this.scoreBoard.position.y, this.camera.position.z));
-					//this.scoreBoard.rotation.y += 0.01;
-				}
-
-
-				this.sendPlayerData(serialize(this.players))
-
+				this.update();
 				requestAnimationFrame(animate);
 			}
 			animate();
 
 			resolve('loaded');
 		});
+	}
+	
+	//local IsHost Property
+	get isHost() { return this.communication.isHost; }
+
+	//happens every frame (like unity)
+	update() {
+		let hackysackPosition;
+		//hackysackPosition = this.physics.update();
+		if (this.isHost) {
+			hackysackPosition = this.physics.update();
+			this.communication.sendHackysackPosition(hackysackPosition);
+		} else {
+			hackysackPosition = this.communication.getHackysackPosition();
+		}
+
+		console.assert(checkPos(this.players));
+		const result = this.communication.resolvePlayerUpdates(this.players);
+		console.assert(checkPos(this.players));
+
+		if (result.playersEntered.length) {
+			console.debug('enter', result.playersEntered)
+		}
+		if (result.playersExited.length) {
+			console.debug('exit', result.playersExited);
+		}
+
+		for (let playerExited of result.playersExited) {
+			delete this.players[playerExited]
+		}
+		for (let playerEntered of result.playersEntered) {
+			this.players[playerEntered.clientId] = new Player(
+				false,
+				this.communication,
+				playerEntered.position,
+				this.hackysack,
+				playerEntered.color,
+				this.physics
+			);
+			this.scene.add(this.players[playerEntered.clientId]);
+		}
+
+		for (let clientId in this.players) {
+			this.players[clientId].update();
+		}
+
+		if (hackysackPosition) {
+			this.hackysack.position.copy(hackysackPosition);
+			this.renderer.render(this.scene, this.camera);
+		}
+
+		if (this.config.isWebVRAvailable) {
+			this.animateVR();
+		}
+
+		if (this.scoreBoard) {
+			this.scoreBoard.lookAt(new THREE.Vector3(this.camera.position.x, this.scoreBoard.position.y, this.camera.position.z));
+			//this.scoreBoard.rotation.y += 0.01;
+		}
+
+
+		this.sendPlayerData(serialize(this.players))
 	}
 
 	animateVR() {
@@ -198,7 +205,8 @@ class Scene {
 		this.renderer.sortObjects = false;
 		this.renderer.setPixelRatio(window.devicePixelRatio);
 		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = BasicShadowMap;
+		//this.renderer.shadowMap.type = BasicShadowMap;
+		this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
 
@@ -227,20 +235,23 @@ class Scene {
 
 		// ground
 		const groundGeometry = new THREE.PlaneGeometry(this.config.roomWidth, this.config.roomDepth);
-		const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x78c62d, side: THREE.FrontSide });
+		var groundMaterial = new THREE.MeshLambertMaterial({ color: 0x78c62d });
+		//groundMaterial.side = THREE.FrontSide;
 		this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
 		this.ground.rotation.x = -Math.PI / 2;
+		this.ground.receiveShadow  = true; // the only object that recieves shadow - this helps depth perception (important for game)
 		this.scene.add(this.ground);
 		this.physics.setupGround(this.ground, this.config.roomDepth, this.config.roomWidth);
 
 		// hackysack
 		const hackysackGeometry = new THREE.SphereGeometry(this.config.hackysackRadius, 32, 32);
-		const hackysackMaterial = new THREE.MeshLambertMaterial({
+		const hackysackMaterial = new THREE.MeshStandardMaterial({
 			color: this.communication.isHost ? 0xff0000 : 0xffffff,
 			wireframe: false
 		});
 		this.hackysack = new THREE.Mesh(hackysackGeometry, hackysackMaterial);
 		this.hackysack.position.y = 2;
+		this.hackysack.castShadow = true; // the only object that casts - this helps depth perception (important for game)
 		this.scene.add(this.hackysack);
 		this.physics.setupHackysack(this.hackysack);
 
@@ -257,9 +268,18 @@ class Scene {
 		//this.scene.add(this.room);
 
 		//lights
-		var directionalLight = new THREE.DirectionalLight({ color: 0xffffff, intensity: 0.5 });
-		directionalLight.position.set(1, 1, 1);
-		this.scene.add(directionalLight);
+		this.directionalLight = new THREE.DirectionalLight({ color: 0xffffff, intensity: 0.9, castShadow:true });
+		this.directionalLight.castShadow = true;
+		this.directionalLight.position.set(1, 2, 3);
+		this.directionalLight.shadowDarkness = 1;		
+		this.directionalLight.shadowCameraVisible = true;	
+
+		 this.directionalLight.shadow.mapSize.width = 512;  // default
+		this.directionalLight.shadow.mapSize.height = 512; // default
+		this.directionalLight.shadow.camera.near = 0.5;       // default
+		this.directionalLight.shadow.camera.far = 500      // default
+
+		this.scene.add(this.directionalLight);
 
 
 		this.setupScoreBoard();
@@ -309,9 +329,9 @@ class Scene {
 		//geometry.verticesNeedUpdate = true;
 
 		geometry.rotateX(Math.PI / 2);
-		geometry.translate( -1, 0, -1 );
-		geometry.rotateZ(Math.PI );
-		geometry.rotateY(Math.PI );
+		geometry.translate(-1, 0, -1);
+		geometry.rotateZ(Math.PI);
+		geometry.rotateY(Math.PI);
 		return geometry;
 	}
 
@@ -347,10 +367,12 @@ class Scene {
 		if (enable) {
 			this.camera = this.localPlayer.camera;
 			this.localPlayer.hideHead();
+			this.localPlayer.autoHands();
 			this.onWindowResize();
 		} else {
 			this.camera = this.overheadCamera;
 			this.localPlayer.showHead();
+			this.localPlayer.showHands();
 		}
 	}
 }
