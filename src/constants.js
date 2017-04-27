@@ -9,7 +9,8 @@ const INITIAL_CONFIG = {
 	roomWidth: 10,
 	roomHeight: 10,
 	roomDepth: 10,
-	timeStep: 1/60
+	timeStep: 1/60, 
+	scoreFontSize: 2.35
 };
 
 

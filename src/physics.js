@@ -2,27 +2,29 @@ class Physics {
 	constructor(config, emitter) {
 		this.config = config;
 		this.emitter = emitter;
-	}
 
-	setupWorld(bodies) {
 		this.world = new CANNON.World();
 		this.world.gravity.set(0, -this.config.gravity, 0);
 		this.world.broadphase = new CANNON.NaiveBroadphase();
 		this.world.solver.iterations = 20;
-		this.setupGround(bodies.ground);
-		this.setupHackysack(bodies.hackysack);
 	}
 
-	setupGround(plane) {
+	setupWorld(bodies) {
+		
+		//this.setupGround(bodies.ground);
+		//this.setupHackysack(bodies.hackysack);
+	}
+
+	setupGround(plane, width, depth) {
 		const groundMaterial = new CANNON.Material();
-		const groundShape = new CANNON.Plane();
+		const groundShape = new CANNON.Box(new CANNON.Vec3(width, 0.001, depth));
 		this.ground = new CANNON.Body({
 			mass: 0,
-			material: groundMaterial,
-			shape: groundShape
+			material: groundMaterial
 		});
+		this.ground.addShape(groundShape);
 		this.ground.position.copy(plane.position);
-		this.ground.quaternion.copy(plane.quaternion);
+		//this.ground.quaternion.copy(plane.quaternion);
 
 		this.ground.addEventListener("collide", (e) => {
 			console.log("hacky sack collided");
@@ -45,7 +47,7 @@ class Physics {
 			shape: new CANNON.Sphere(this.config.hackysackRadius),
 			material: new CANNON.Material()
 		});
-		this.addContactMaterial(this.hackysack.material, this.ground.material, .7, .3);
+		this.addContactMaterial(this.hackysack.material, this.ground.material, .7, .5);
 		this.hackysack.position.copy(hackysack.position);
 		this.hackysack.quaternion.copy(hackysack.quaternion);
 		this.hackysack.linearDamping = 0.1;
